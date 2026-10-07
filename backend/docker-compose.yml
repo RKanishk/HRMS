@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cipl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-cipl_hrms}
+    ports:
+      - '127.0.0.1:5434:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7.4-bookworm
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cipl}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cipl_hrms}?schema=public
+    command: ['npx', 'prisma', 'migrate', 'deploy', '--config', 'prisma.config.ts']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+  backend:
+    build: .
+    env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cipl}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cipl_hrms}?schema=public
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_PATH: /app/storage
+    ports:
+      - '127.0.0.1:3001:3001'
+    volumes:
+      - files:/app/storage
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  redis_data:
+  files:

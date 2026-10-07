@@ -1,0 +1,7 @@
+src/generated
+node_modules
+dist
+test-dist
+package-lock.json
+docs/openapi.json
+prisma/migrations

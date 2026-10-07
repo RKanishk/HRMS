@@ -1,0 +1,82 @@
+{
+  "name": "cipl-hrms-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.15 <25"
+  },
+  "scripts": {
+    "dev": "npm run build && node --env-file=.env --watch dist/src/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "start": "node --env-file=.env dist/src/main.js",
+    "start:prod": "node dist/src/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src prisma scripts test",
+    "format": "prettier --write src prisma scripts test docs *.json *.md *.yml",
+    "format:check": "prettier --check src prisma scripts test docs *.json *.md *.yml",
+    "db:generate": "prisma generate --config prisma.config.ts",
+    "db:validate": "prisma validate --config prisma.config.ts",
+    "db:migrate": "prisma migrate deploy --config prisma.config.ts",
+    "db:seed": "node --env-file=.env dist/prisma/seed.js",
+    "test:compile": "tsc -p tsconfig.test.json",
+    "test:unit": "npm run test:compile && node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs --selectProjects unit --runInBand",
+    "test:e2e": "npm run test:compile && node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs --selectProjects e2e --runInBand",
+    "test": "npm run test:unit && npm run test:e2e",
+    "openapi:export": "node --env-file=.env dist/scripts/export-openapi.js",
+    "verify": "npm run db:validate && npm run lint && npm run typecheck && npm run test && npm run build && npm run openapi:export"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.1.1",
+    "@nestjs/core": "12.1.1",
+    "@nestjs/platform-express": "12.1.1",
+    "@nestjs/swagger": "12.0.2",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "bcrypt": "6.0.0",
+    "bullmq": "6.3.9",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
+    "csv-parse": "^6.1.0",
+    "dotenv": "^17.2.3",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.8.2",
+    "luxon": "^3.7.2",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-socket": "0.2.11",
+    "@eslint/js": "10.0.1",
+    "@nestjs/testing": "12.1.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/luxon": "^3.7.1",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.10.0",
+    "@types/nodemailer": "^7.0.11",
+    "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.3",
+    "eslint": "10.11.0",
+    "jest": "30.5.2",
+    "prettier": "^3.7.4",
+    "prisma": "7.10.0",
+    "supertest": "^7.2.2",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "8.71.0"
+  },
+  "overrides": {
+    "@prisma/dev": {
+      "@electric-sql/pglite": "0.4.3",
+      "@electric-sql/pglite-socket": "0.1.3"
+    }
+  }
+}
